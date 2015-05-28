@@ -75,9 +75,8 @@ class NonnullableConverter {
 
   def split(chain: Seq[Symbol], nullables: Set[Nonterminal]): (Seq[Nonterminal], Seq[Symbol]) = {
     val bs: Seq[Nonterminal] = chain.takeWhile {
-      case term: Terminal => false
-      case EmptySymbol => false
       case nonterm: Nonterminal => nullables.contains(nonterm)
+      case _ => false
     } map {
       case nonterm: Nonterminal => nonterm
     }
