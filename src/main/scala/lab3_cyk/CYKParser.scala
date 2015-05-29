@@ -50,8 +50,6 @@ class CYKParser(val grammar: Grammar) {
     table :+ row
   }
 
-
-
   def findProductions(a: Set[Nonterminal], b: Set[Nonterminal]): Set[Production] = {
     val combinations = a cartesianProduct b
     combinations flatMap {
