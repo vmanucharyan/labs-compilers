@@ -80,7 +80,7 @@ class CYKParserSuite extends FunSuite with Matchers {
 
     val actualTable = cyk.constructTable(chain)
 
-    actualTable shouldEqual expectedTable
+    actualTable shouldEqual Success(expectedTable)
   }
 
   test("validate chain 'abaab'") {

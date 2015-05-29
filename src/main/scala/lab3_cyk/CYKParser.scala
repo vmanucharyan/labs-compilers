@@ -37,17 +37,20 @@ class CYKParser(val grammar: Grammar) {
 
   def constructRow(j: Int, n: Int, table: Table): Table = {
     val row: Seq[Set[Nonterminal]] = for (i <- 1 to n - j + 1) yield {
-      val setA: Set[Nonterminal] =
-        (1 until j).flatMap(k => table(k - 1)(i - 1)).toSet
+      val pairs: Seq[(Set[Nonterminal], Set[Nonterminal])] =
+        for (k <- 1 until j) yield (table(k - 1)(i - 1), table(j - k - 1)(i + k - 1))
 
-      val setB: Set[Nonterminal] =
-        (1 until j).flatMap(k => table(j - k - 1)(i + k - 1)).toSet
+      val productions: Seq[Set[Production]] = pairs map {
+        case (setA, setB) => findProductions(setA, setB)
+      }
 
-      findProductions(setA, setB).map(p => p.lhs)
+      productions.toSet.flatten.map(p => p.lhs)
     }
 
     table :+ row
   }
+
+
 
   def findProductions(a: Set[Nonterminal], b: Set[Nonterminal]): Set[Production] = {
     val combinations = a cartesianProduct b
