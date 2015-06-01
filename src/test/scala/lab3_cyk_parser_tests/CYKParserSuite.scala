@@ -87,4 +87,11 @@ class CYKParserSuite extends FunSuite with Matchers {
     val chain = Seq(a_, b, a_, a_, b)
     cyk.validate(chain) shouldBe Success(true)
   }
+
+  test("left parse for 'abaab") {
+    val chain = Seq(a_, b, a_, a_, b)
+    val parse = cyk.leftParse(chain)
+
+    assert(true)
+  }
 }

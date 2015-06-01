@@ -3,6 +3,12 @@ package common
 case class Production(from: Nonterminal, to: Seq[Symbol]) {
   def rhs = to
   def lhs = from
+
+  override def toString = {
+    var res = s"$lhs -> "
+    rhs.foreach(s => res += s"$s")
+    res
+  }
 }
 
 case class Grammar(terminals: Set[Terminal],
@@ -12,6 +18,7 @@ case class Grammar(terminals: Set[Terminal],
 
 trait Symbol {
   def name: String
+  override def toString = s"$name"
 }
 
 case class Terminal(name: String) extends Symbol
