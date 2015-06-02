@@ -6,7 +6,7 @@ case class Production(from: Nonterminal, to: Seq[Symbol]) {
 
   override def toString = {
     var res = s"$lhs -> "
-    rhs.foreach(s => res += s"$s")
+    rhs.foreach(s => res += s"$s ")
     res
   }
 }
