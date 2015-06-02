@@ -18,4 +18,37 @@ class SetExtSuite extends FunSuite with Matchers {
 
     actual shouldEqual expected
   }
+
+  test("combinations of {1, 2, 3}") {
+    val set = Set(1, 2, 3)
+    val comb = set.combinations()
+    val expected = Set(
+      Set(1),
+      Set(2),
+      Set(3),
+      Set(1, 2),
+      Set(1, 3),
+      Set(2, 3),
+      Set(1, 2, 3)
+    )
+
+    val actual = set.combinations()
+
+    actual shouldEqual expected
+  }
+
+  test("combinations of {1, 2, 3, 4}") {
+    val set = Set(1, 2, 3, 4)
+    val expected = Set(
+      Set(1), Set(1, 2), Set(1, 3), Set(1, 2, 3), Set(1, 4), Set(1, 2, 3, 4),
+      Set(1, 2, 4), Set(1, 3, 4),
+      Set(2), Set(2, 3), Set(2, 4), Set(2, 3, 4),
+      Set(3), Set(3, 4),
+      Set(4)
+    )
+
+    val actual = set.combinations()
+
+    actual shouldEqual expected
+  }
 }

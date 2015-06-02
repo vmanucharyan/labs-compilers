@@ -22,9 +22,9 @@ object ExampleGrammar {
     nonterms = Set(S, A, B),
     startSymbol = S,
     productions = Set(
-      S -> Seq(A, B),
-      A -> Seq(a, B, c, B),
-      B -> Seq(d, e, f)
+      S   ->  Seq(A, B),
+      A   ->  Seq(a, B, c, B),
+      B   ->  Seq(d, e, f)
     )
   )
 
@@ -37,12 +37,12 @@ object ExampleGrammar {
     nonterms = Set(S, A, B, A1, A2, B1),
     startSymbol = S,
     productions = Set(
-      S -> Seq(A, B),
-      A -> Seq(a, A1),
-      A1 -> Seq(B, A2),
-      A2 -> Seq(c, B),
-      B -> Seq(d, B1),
-      B1 -> Seq(e, f)
+      S   ->  Seq(A, B),
+      A   ->  Seq(a, A1),
+      A1  ->  Seq(B, A2),
+      A2  ->  Seq(c, B),
+      B   ->  Seq(d, B1),
+      B1  ->  Seq(e, f)
     )
   )
 }
