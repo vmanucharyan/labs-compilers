@@ -2,9 +2,12 @@ package lab2_nonnullable
 
 import common._
 import common.Implicits.pair2production
+import grammar_transforms.GrammarTransform
 
 
-class NonnullableConverter {
+class NonnullableConverter extends GrammarTransform{
+  override def apply(grammar: Grammar) = convert(grammar)
+
   def convert(g: Grammar): Grammar = {
     val nullables = findNullables(g)
     val reversed: Map[Nonterminal, Nonterminal] =

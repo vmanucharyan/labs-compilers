@@ -1,11 +1,9 @@
 package lab3_cyk
 
-import com.sun.javaws.exceptions.InvalidArgumentException
 import common._
 import common.SetExt._
 import common.Implicits.pair2production
 
-import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 import scala.util.Try
