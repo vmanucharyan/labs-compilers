@@ -22,22 +22,14 @@ class CYKParser(val grammar: Grammar) {
 
   def leftParse(chain: Chain): Try[Seq[Production]] = {
     def gen(i: Int, j: Int, s: Nonterminal, table: Table, acc: ListBuffer[Production]): Unit = {
-      println(s"\ngen($i, $j, $s)")
-
       if (j == 1) {
         if (grammar.productions.contains(s -> Seq(chain(i - 1))))
           acc.append(s -> Seq(chain(i - 1)))
-        println(s"acc: $acc")
       } else {
         val newProd =
           (1 until j).map { k =>
-            println(s"i = $i, j = $j, k = $k:")
-
             val setB = table(k - 1)(i - 1)
             val setC = table(j - k - 1)(i + k - 1)
-
-            println(s"  B=$setB, C=$setC")
-
             val bcProductions: Set[Production] = findProductions(setB, setC)
 
             (k, bcProductions.find(p => p.lhs == s))
@@ -48,11 +40,7 @@ class CYKParser(val grammar: Grammar) {
 
         val (k, prod) = newProd
 
-        println(s"  newProd: $newProd")
-        println(s"  A = $prod")
-
         acc.append(prod)
-        println(s"  acc: $acc")
 
         gen(i, k, prod.rhs(0).asInstanceOf[Nonterminal], table, acc)
         gen(i + k, j - k, prod.rhs(1).asInstanceOf[Nonterminal], table, acc)
