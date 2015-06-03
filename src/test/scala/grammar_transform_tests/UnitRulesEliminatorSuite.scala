@@ -23,24 +23,12 @@ class UnitRulesEliminatorSuite extends FunSuite with Matchers {
     nonterms = Set(nS, nA, nB, nC),
     startSymbol = nS,
     productions = Set(
-      nS -> Seq(nA, nB, nC),
-      nS -> Seq(nA, nB),
-      nS -> Seq(nB, nC),
-      nS -> Seq(nA),
-      nS -> Seq(nB),
-      nS -> Seq(nC),
-      nS -> Seq(eps),
+      nS -> Seq(nA, nB, nC), nS -> Seq(nA, nB), nS -> Seq(nB, nC), nS -> Seq(nA, nC),
+      nS -> Seq(nA), nS -> Seq(nB), nS -> Seq(nC), nS -> Seq(eps),
 
-      nA -> Seq(nB, nB),
-      nA -> Seq(nB),
-
-      nB -> Seq(nC, nC),
-      nB -> Seq(nC),
-      nB -> Seq(ta),
-
-      nC -> Seq(nA, nA),
-      nC -> Seq(nA),
-      nC -> Seq(tb)
+      nA -> Seq(nB, nB), nA -> Seq(nB),
+      nB -> Seq(nC, nC), nB -> Seq(nC), nB -> Seq(ta),
+      nC -> Seq(nA, nA), nC -> Seq(nA), nC -> Seq(tb)
     )
   )
 
@@ -104,6 +92,24 @@ class UnitRulesEliminatorSuite extends FunSuite with Matchers {
       )
     )
     val actual = tr(ex2Grammar)
+    actual shouldEqual expected
+  }
+
+  test("convert example grammar") {
+    val tr = new UnitRulesEliminator()
+    val expected = exGrammar.copy(
+      productions = Set(
+        nS -> Seq(nA, nB, nC), nS -> Seq(nA, nB), nS -> Seq(nA, nC), nS -> Seq(nB, nC), nS -> Seq(eps),
+        nS -> Seq(nB, nB), nS -> Seq(nC, nC), nS -> Seq(nA, nA), nS -> Seq(ta), nS -> Seq(tb),
+
+        nA -> Seq(nB, nB), nA -> Seq(nC, nC), nA -> Seq(nA, nA), nA -> Seq(ta), nA -> Seq(tb),
+        nB -> Seq(nB, nB), nB -> Seq(nC, nC), nB -> Seq(nA, nA), nB -> Seq(ta), nB -> Seq(tb),
+        nC -> Seq(nB, nB), nC -> Seq(nC, nC), nC -> Seq(nA, nA), nC -> Seq(ta), nC -> Seq(tb)
+      )
+    )
+    val actual = tr(exGrammar)
+    val diff = expected.productions diff actual.productions
+
     actual shouldEqual expected
   }
 }
