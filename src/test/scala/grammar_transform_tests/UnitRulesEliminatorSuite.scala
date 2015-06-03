@@ -99,8 +99,9 @@ class UnitRulesEliminatorSuite extends FunSuite with Matchers {
     val tr = new UnitRulesEliminator()
     val expected = exGrammar.copy(
       productions = Set(
-        nS -> Seq(nA, nB, nC), nS -> Seq(nA, nB), nS -> Seq(nA, nC), nS -> Seq(nB, nC), nS -> Seq(eps),
+        nS -> Seq(nA, nB, nC), nS -> Seq(nA, nB), nS -> Seq(nA, nC), nS -> Seq(nB, nC),
         nS -> Seq(nB, nB), nS -> Seq(nC, nC), nS -> Seq(nA, nA), nS -> Seq(ta), nS -> Seq(tb),
+        nS -> Seq(eps),
 
         nA -> Seq(nB, nB), nA -> Seq(nC, nC), nA -> Seq(nA, nA), nA -> Seq(ta), nA -> Seq(tb),
         nB -> Seq(nB, nB), nB -> Seq(nC, nC), nB -> Seq(nA, nA), nB -> Seq(ta), nB -> Seq(tb),
@@ -108,7 +109,6 @@ class UnitRulesEliminatorSuite extends FunSuite with Matchers {
       )
     )
     val actual = tr(exGrammar)
-    val diff = expected.productions diff actual.productions
 
     actual shouldEqual expected
   }
