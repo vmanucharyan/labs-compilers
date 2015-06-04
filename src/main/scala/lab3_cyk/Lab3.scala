@@ -2,7 +2,7 @@ package lab3_cyk
 
 import common.{Grammar, Terminal, Nonterminal}
 import common.Implicits._
-import grammar_transforms.LongRulesEliminator
+import grammar_transforms.{ChomskyConverter, LongRulesEliminator}
 
 
 object Lab3 {
@@ -85,14 +85,15 @@ object Lab3 {
     )
   )
 
-  val l3parser = new CYKParser(l3Grammar)
 
   def main(args: Array[String]): Unit = {
-    val longRulesEliminator = new LongRulesEliminator()
-    val newGrammar = longRulesEliminator(l3Grammar)
-    println(s"new grammar:\n$newGrammar")
+    val chomskyConverter = new ChomskyConverter()
+    val l3chomsky = chomskyConverter(l3Grammar)
+    val l3parser = new CYKParser(l3chomsky)
 
-    val l3chain = Seq(const, big, const)
+    println(l3chomsky)
+
+    val l3chain = Seq(const, be, const)
     println(s"chain: $l3chain")
 
     val table = l3parser.constructTable(l3chain)

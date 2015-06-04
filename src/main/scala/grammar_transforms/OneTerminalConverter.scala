@@ -7,6 +7,7 @@ class OneTerminalConverter extends GrammarTransform {
     val withTwoTerminals = grammar.productions filter {
       case Production(_, Seq(u1: Terminal, u2: Terminal)) => true
       case Production(_, Seq(u1, u2)) => false
+      case Production(_, Seq(u)) => false
       case _ => throw new IllegalArgumentException("grammar contains long rules")
     }
 
