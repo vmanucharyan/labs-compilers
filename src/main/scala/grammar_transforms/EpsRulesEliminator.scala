@@ -17,7 +17,22 @@ class EpsRulesEliminator extends GrammarTransform {
       newProductions + prod
     }
 
-    grammar.copy(productions = newProd.filter(p => p.rhs != Seq(EmptySymbol) && p.rhs != Seq()))
+    val newGrammar =
+      grammar.copy(productions = newProd.filter(p => p.rhs != Seq(EmptySymbol) && p.rhs != Seq()))
+
+    if (epsProducers.contains(grammar.startSymbol)) {
+      val oldStart = newGrammar.startSymbol
+      val newStart = Nonterminal("EPS_ELIM_" + newGrammar.startSymbol.name)
+      newGrammar.copy(
+        startSymbol = newStart,
+        nonterms = newGrammar.nonterms + newStart,
+        productions = newGrammar.productions ++ Set(
+          Production(newStart, Seq(oldStart)),
+          Production(newStart, Seq(EmptySymbol))
+        )
+      )
+    }
+    else newGrammar
   }
 
   def findEpsProducers(g: Grammar): Set[Nonterminal] = {

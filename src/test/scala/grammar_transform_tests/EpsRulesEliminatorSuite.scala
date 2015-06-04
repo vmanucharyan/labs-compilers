@@ -52,6 +52,24 @@ object ExampleGrammarEps {
       C -> Seq(c)
     )
   )
+
+  val grammar2 = grammar.copy(
+    productions = Set(
+      S -> Seq(e), S -> Seq(A, b), S -> Seq(S, S),
+      A -> Seq(a, S)
+    )
+  )
+
+  val eS = Nonterminal("EPS_ELIM_S")
+  val grammar2Expected = grammar2.copy(
+    nonterms = grammar2.nonterms + eS,
+    startSymbol = eS,
+    productions = Set(
+      eS -> Seq(e), eS -> Seq(S),
+      S -> Seq(A, b), S -> Seq(S, S),
+      A -> Seq(a, S), A -> Seq(a)
+    )
+  )
 }
 
 class EpsRulesEliminatorSuite extends FunSuite with Matchers {
@@ -59,5 +77,11 @@ class EpsRulesEliminatorSuite extends FunSuite with Matchers {
     val tr = new EpsRulesEliminator()
     val actual = tr(ExampleGrammarEps.grammar)
     actual shouldEqual ExampleGrammarEps.expectedGrammar
+  }
+
+  test("works with grammar where S ->* eps exists") {
+    val tr = new EpsRulesEliminator()
+    val actual = tr(ExampleGrammarEps.grammar2)
+    actual shouldEqual ExampleGrammarEps.grammar2Expected
   }
 }

@@ -108,6 +108,7 @@ class UnitRulesEliminatorSuite extends FunSuite with Matchers {
         nC -> Seq(nB, nB), nC -> Seq(nC, nC), nC -> Seq(nA, nA), nC -> Seq(ta), nC -> Seq(tb)
       )
     )
+
     val actual = tr(exGrammar)
 
     actual shouldEqual expected
