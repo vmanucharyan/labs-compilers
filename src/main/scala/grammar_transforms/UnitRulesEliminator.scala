@@ -1,7 +1,6 @@
 package grammar_transforms
 
 import common.{Production, Nonterminal, Grammar}
-import common.SetExt._
 
 class UnitRulesEliminator extends GrammarTransform {
   override def apply(grammar: Grammar): Grammar = {

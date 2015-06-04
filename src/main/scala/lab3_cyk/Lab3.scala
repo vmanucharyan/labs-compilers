@@ -1,6 +1,6 @@
 package lab3_cyk
 
-import common.{Grammar, Terminal, Nonterminal}
+import common.{Tokenizer, Grammar, Terminal, Nonterminal}
 import common.Implicits._
 import grammar_transforms.{ChomskyConverter, LongRulesEliminator}
 
@@ -93,7 +93,9 @@ object Lab3 {
 
     println(l3chomsky)
 
-    val l3chain = Seq(const, be, const)
+    val tokenizer = new Tokenizer(l3Grammar.terminals)
+    val l3chain = tokenizer.apply("id * ( const + const ) < const")
+
     println(s"chain: $l3chain")
 
     val table = l3parser.constructTable(l3chain)
