@@ -4,7 +4,6 @@ import org.scalatest.{Matchers, FunSuite}
 
 import common.SetExt._
 
-
 class SetExtSuite extends FunSuite with Matchers {
   test("cartesion product of {1, 2} and {orange, apple} is" +
        "{(1, apple), (1, orange), (2, apple), (2, orange)}") {

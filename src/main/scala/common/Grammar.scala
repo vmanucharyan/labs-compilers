@@ -19,10 +19,11 @@ case class Grammar(terminals: Set[Terminal],
 trait Symbol {
   def name: String
   override def toString = s"$name"
+  def isTerminal = this.isInstanceOf[Terminal]
+  def isNonterminal = this.isInstanceOf[Nonterminal]
 }
 
 case class Terminal(name: String) extends Symbol
-
 case class Nonterminal(name: String) extends Symbol
 
 object EmptySymbol extends Symbol {
