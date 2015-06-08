@@ -117,8 +117,12 @@ object Lab3 {
     val valid = l3parser.validate(l3chain)
     val leftparse = l3parser.leftParse(l3chain)
 
-    println(s"left parse:")
+    println("left parse:")
     leftparse.get.zipWithIndex.foreach { case (p, i) => println(s"$i) $p") }
+
+    println("left parse:")
+    leftparse.get.foreach(p => print(s"${l3chomsky.labels(p)} "))
+    println()
 
     println(s"$valid")
   }
