@@ -14,7 +14,7 @@ class UselessSymbolsEliminator extends GrammarTransform {
 
       val union = newUseful ++ useful
 
-      println(union)
+      //println(union)
 
       if (union == useful) useful
       else findUseful(newUseful ++ useful)
@@ -29,7 +29,7 @@ class UselessSymbolsEliminator extends GrammarTransform {
       .filter(p => p.rhs.forall(s => !s.isNonterminal))
       .map(p => p.lhs)
 
-    println(clearlyUseful)
+    //println(clearlyUseful)
 
     val useful =  findUseful(clearlyUseful)
 

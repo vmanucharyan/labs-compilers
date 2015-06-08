@@ -58,7 +58,7 @@ class CYKParser(val grammar: Grammar) {
 
   def constructTable(chain: Chain): Try[Table] = {
     constructFirstRow(chain).map { initialTable =>
-      val n = initialTable.head.length
+      val n = chain.length
       (2 to n).foldLeft(initialTable)((acc, j) => constructRow(j, n, acc))
     }
   }

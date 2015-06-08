@@ -87,21 +87,38 @@ object Lab3 {
 
 
   def main(args: Array[String]): Unit = {
+    if (args.length < 1) {
+      println("usage: lab3 <input chain>")
+      return
+    }
+
     val chomskyConverter = new ChomskyConverter()
-    val l3chomsky = chomskyConverter(l3Grammar)
+    val l3chomsky = chomskyConverter(l3Grammar).createLabels()
     val l3parser = new CYKParser(l3chomsky)
 
-    println(l3chomsky)
-
     val tokenizer = new Tokenizer(l3Grammar.terminals)
-    val l3chain = tokenizer.apply("id * ( const + const ) < const")
+    val l3chain = tokenizer.apply(args(0))
 
+    println("transformed grammar:")
+    println(l3chomsky)
+    println()
+
+    println(args(0))
     println(s"chain: $l3chain")
 
+    println("\nparse table:")
     val table = l3parser.constructTable(l3chain)
-    println(s"table: $table")
+    table.get.foreach { row =>
+      row.foreach(symbols => print(s"$symbols "))
+      println()
+    }
+    println()
 
     val valid = l3parser.validate(l3chain)
+    val leftparse = l3parser.leftParse(l3chain)
+
+    println(s"left parse:")
+    leftparse.get.zipWithIndex.foreach { case (p, i) => println(s"$i) $p") }
 
     println(s"$valid")
   }

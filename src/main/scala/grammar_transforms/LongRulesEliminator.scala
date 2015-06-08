@@ -29,15 +29,13 @@ class LongRulesEliminator extends GrammarTransform {
 
         (p, newSymbols.map(_._2).toSet, newProductions + firstProduction)
       }
-      .foldLeft(grammar)((acc, repl) => {
-        repl match {
-          case (prod, newNonterms, newProductions) =>
-            println(s"deleted $prod, added $newProductions")
-            acc.copy(
-              nonterms = acc.nonterms ++ newNonterms,
-              productions = (acc.productions - prod) ++ newProductions
-            )
-        }
+      .foldLeft(grammar)((acc, repl) => repl match {
+        case (prod, newNonterms, newProductions) =>
+          //println(s"deleted $prod, added $newProductions")
+          acc.copy(
+            nonterms = acc.nonterms ++ newNonterms,
+            productions = (acc.productions - prod) ++ newProductions
+          )
       })
   }
 }
