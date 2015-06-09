@@ -8,12 +8,20 @@ class EpsRulesEliminator extends GrammarTransform {
   override def apply(grammar: Grammar): Grammar = {
     val epsProducers = findEpsProducers(grammar)
     val newProd: Set[Production] = grammar.productions.flatMap { prod =>
-      val prodEpsProducers = prod.rhs
-        .filter(symbol => epsProducers.exists(ep => ep == symbol))
+      val prodEpsProducers: Seq[Int] = prod.rhs.zipWithIndex
+        .filter { case (symbol, pos) => epsProducers.exists(ep => ep == symbol) }
+        .map(_._2)
 
       val combinations = prodEpsProducers.toSet.combinations()
       val newProductions = combinations
-        .map(combination => Production(prod.lhs, prod.rhs.filter(s => !combination.contains(s))))
+        .map(combination => Production(
+          prod.lhs,
+          prod.rhs
+            .zipWithIndex
+            .filter { case (s, i) => !combination.contains(i) }
+            .map { case (s, i) => s }
+      ))
+
       newProductions + prod
     }
 

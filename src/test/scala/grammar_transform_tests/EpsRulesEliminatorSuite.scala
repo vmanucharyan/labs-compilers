@@ -66,7 +66,7 @@ object ExampleGrammarEps {
     startSymbol = eS,
     productions = Set(
       eS -> Seq(e), eS -> Seq(S),
-      S -> Seq(A, b), S -> Seq(S, S),
+      S -> Seq(A, b), S -> Seq(S, S), S -> Seq(S),
       A -> Seq(a, S), A -> Seq(a)
     )
   )
