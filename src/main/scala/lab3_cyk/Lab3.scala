@@ -5,6 +5,8 @@ import common.Implicits._
 import grammar_transforms.{ChomskyConverter, LongRulesEliminator}
 
 
+
+
 object Lab3 {
   val S = Nonterminal("S")
   val A = Nonterminal("A")
