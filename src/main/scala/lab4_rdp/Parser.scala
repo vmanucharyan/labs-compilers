@@ -84,56 +84,59 @@ case class Parser(inputChain: String, cursor: Int, values: Map[String, Double]) 
 
   def arithmeticExpression1(prefix: Double): Try[(Double, Parser)] = {
     println("ENTERING ARITHMETIC EXPRESSION1")
-    addOp().flatMap { case (op, p) => p.term().map { case (termRes, p1) => (op(prefix, termRes), p1) } }
+
+    this
+      .addOp()
+      .flatMap { case (op, p) => p.term().map { case (termVal, p1) => (op(prefix, termVal), p1) } }
+      .flatMap { case (value, p) => p.arithmeticExpression1(prefix) }
       .recoverWith { case _: ParserException =>
         this
           .addOp()
-          .flatMap { case (op, p) => p.term().map { case (termVal, p1) => (op(prefix, termVal), p1) } }
-          .flatMap { case (value, p) => p.arithmeticExpression1(prefix) }
+          .flatMap { case (op, p) =>
+            p.term().map { case (termRes, p1) => (op(prefix, termRes), p1) }
+          }
       }
   }
 
 
   def term(): Try[(Double, Parser)] = {
     println("ENTERING TERM")
-
-    factor().recoverWith { case _: ParserException =>
-      factor().flatMap { case (value, p) => p.term1(value) }
-    }
+    factor().flatMap { case (value, p) => p.term1(value) }
+      .recoverWith { case _: ParserException => factor() }
   }
 
 
   def term1(prefix: Double): Try[(Double, Parser)] = {
     println("ENTERING TERM1")
 
-    mulOp().flatMap { case (op, p) =>
-      p.factor().map { case (value, p1) => op(prefix, value) -> p1 }
-    }
-    .recoverWith { case _: ParserException =>
-      this
-        .mulOp()
-        .flatMap{ case (op, mulp) =>
-          mulp.factor().map { case (facres, facp) => op(prefix, facres) -> facp }
+    this
+      .mulOp()
+      .flatMap{ case (op, mulp) =>
+        mulp.factor().map { case (facres, facp) => op(prefix, facres) -> facp }
+      }
+      .flatMap { case (value, p) => p.term1(value) }
+      .recoverWith { case _: ParserException =>
+        mulOp().flatMap { case (op, p) =>
+          p.factor().map { case (value, p1) => op(prefix, value) -> p1 }
         }
-        .flatMap { case (value, p) => p.term1(value) }
-    }
+      }
   }
 
 
   def factor(): Try[(Double, Parser)] = {
     println("ENTERING FACTOR1")
 
-    identifier().map { case (name, p) => (values(name), p)  }
+    this
+      .consume("(")
+      .flatMap(_.arithmeticExpression())
+      .flatMap{ case (value, p) => p.consume(")").map(consp => (value, consp)) }
       .recoverWith { case _: ParserException =>
-        constant().recoverWith { case _: ParserException =>
-          this
-            .consume("(")
-            .flatMap(_.arithmeticExpression())
-            .flatMap{ case (value, p) => p.consume(")").map(consp => (value, consp)) }
-        }
-    }
+        identifier().map { case (name, p) => (values(name), p)  }
+          .recoverWith { case _: ParserException =>
+            constant()
+          }
+      }
   }
-
 
   def constant(): Try[(Double, Parser)] = {
     println("ENTERING CONSTANT")
