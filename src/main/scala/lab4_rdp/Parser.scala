@@ -18,19 +18,16 @@ case class Parser(inputChain: String, cursor: Int, values: Map[String, Double]) 
 
 
   def block(): Try[Parser] = {
-    println("ENTERING BLOCK")
     consume("{").flatMap(_.operatorsList()).flatMap(_.consume("}"))
   }
 
 
   def operatorsList(): Try[Parser] = {
-    println("ENTERING OPERATOR LIST")
     operator().flatMap(_.tail())
   }
 
 
   def operator(): Try[Parser] = {
-    println("ENTERING OPERATOR")
     this
       .identifier()
       .flatMap{ case (idName, p) => p.consume("=").map(p1 => (idName, p1)) }
@@ -44,18 +41,16 @@ case class Parser(inputChain: String, cursor: Int, values: Map[String, Double]) 
 
 
   def tail(): Try[Parser] = {
-    println("ENTERING TAIL")
+
     consume(";").flatMap(_.operator()).flatMap(_.tail())
       .recover { case e: ParserException => this }
   }
 
 
   def identifier(): Try[(String, Parser)] = {
-    println("ENTERING IDENTIFIER")
     consumeWord() flatMap { case (symbol, parser) =>
       if (symbol.head.isLetter) Success(symbol -> parser)
       else {
-        println(s"$symbol is not identifier")
         Failure(ParserException("identifier starts with letter"))
       }
     }
@@ -63,7 +58,6 @@ case class Parser(inputChain: String, cursor: Int, values: Map[String, Double]) 
 
 
   def expression(): Try[(Double, Parser)] = {
-    println("ENTERING EXPRESSION")
     this
       .arithmeticExpression()
       .flatMap { case (value, p) => p.cmpOp().map{ case (op, p1) => (value, op, p1)} }
@@ -75,15 +69,12 @@ case class Parser(inputChain: String, cursor: Int, values: Map[String, Double]) 
 
 
   def arithmeticExpression(): Try[(Double, Parser)] = {
-    println("ENTERING ARITHMETIC EXPRESSION")
     term().flatMap{ case (value, p) => p.arithmeticExpression1(value) }
       .recoverWith { case _: ParserException => term() }
   }
 
 
   def arithmeticExpression1(prefix: Double): Try[(Double, Parser)] = {
-    println("ENTERING ARITHMETIC EXPRESSION1")
-
     this
       .addOp()
       .flatMap { case (op, p) => p.term().map { case (termVal, p1) => (op(prefix, termVal), p1) } }
@@ -99,14 +90,14 @@ case class Parser(inputChain: String, cursor: Int, values: Map[String, Double]) 
 
 
   def term(): Try[(Double, Parser)] = {
-    println("ENTERING TERM")
+
     factor().flatMap { case (value, p) => p.term1(value) }
       .recoverWith { case _: ParserException => factor() }
   }
 
 
   def term1(prefix: Double): Try[(Double, Parser)] = {
-    println("ENTERING TERM1")
+
 
     this
       .mulOp()
@@ -123,8 +114,6 @@ case class Parser(inputChain: String, cursor: Int, values: Map[String, Double]) 
 
 
   def factor(): Try[(Double, Parser)] = {
-    println("ENTERING FACTOR1")
-
     this
       .consume("(")
       .flatMap(_.arithmeticExpression())
@@ -138,14 +127,12 @@ case class Parser(inputChain: String, cursor: Int, values: Map[String, Double]) 
   }
 
   def constant(): Try[(Double, Parser)] = {
-    println("ENTERING CONSTANT")
+
     consumeNumber()
   }
 
 
   def cmpOp(): Try[(BinaryOperation, Parser)] = {
-    println("ENTERING CMP")
-
     val le = (v1: Double, v2: Double) => if (v1 <= v2) 1.0 else 0.0
     val l = (v1: Double, v2: Double) => if (v1 < v2) 1.0 else 0.0
     val neq = (v1: Double, v2: Double) => if (v1 != v2) 1.0 else 0.0
@@ -184,7 +171,7 @@ case class Parser(inputChain: String, cursor: Int, values: Map[String, Double]) 
 
   def consume(symbol: String): Try[Parser] = {
     if (trimmedChain.startsWith(symbol)) {
-      println(s"consumed $symbol from $trimmedChain")
+
       Success(new Parser(trimmedChain.drop(symbol.length), cursor + symbol.length, values))
     }
     else
@@ -195,7 +182,7 @@ case class Parser(inputChain: String, cursor: Int, values: Map[String, Double]) 
   def consumeWord(): Try[(String, Parser)] = {
     val symbol = trimmedChain.takeWhile(c => !Parser.separators.contains(c))
 
-    println(s"consumed $symbol from $trimmedChain")
+
 
     if (symbol.nonEmpty) {
       Success(symbol -> new Parser(trimmedChain.drop(symbol.length), cursor + symbol.length, values))
@@ -209,7 +196,6 @@ case class Parser(inputChain: String, cursor: Int, values: Map[String, Double]) 
     if (numberString.isEmpty)
       Failure(ParserException(s"expected number in ${trimmedChain.take(10)}..."))
     else {
-      println(s"consuming $numberString")
       Success(numberString.toDouble ->
         new Parser(trimmedChain.drop(numberString.length), cursor + numberString.length, values))
     }

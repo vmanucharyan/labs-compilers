@@ -8,29 +8,6 @@ import scala.util.{Failure, Success}
 
 object Lab4 {
   def main(args: Array[String]): Unit = {
-    val S = Nonterminal("S")
-    val B = Nonterminal("B")
-    val lb = Terminal("(")
-    val rb = Terminal(")")
-    val empty = EmptySymbol
-
-    val grammar = Grammar(
-      nonterms = Set(S, B),
-      terminals = Set(lb, rb),
-      startSymbol = S,
-      productions = Set(
-        S -> Seq(lb, B, rb, B),
-        B -> Seq(lb, B, rb, B),
-        B -> Seq(empty)
-      )
-    )
-
-    val el = new EpsRulesEliminator()
-    println(el(grammar))
-
-    val ex = new ExampleRDP()
-    println(ex.parse("((()(())))"))
-
     val inputString =
       """
         |{
