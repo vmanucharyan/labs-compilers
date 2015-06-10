@@ -76,9 +76,8 @@ case class Parser(inputChain: String, cursor: Int, values: Map[String, Double]) 
 
   def arithmeticExpression(): Try[(Double, Parser)] = {
     println("ENTERING ARITHMETIC EXPRESSION")
-    term().recoverWith { case _: ParserException =>
-      term().flatMap{ case (value, p) => p.arithmeticExpression1(value) }
-    }
+    term().flatMap{ case (value, p) => p.arithmeticExpression1(value) }
+      .recoverWith { case _: ParserException => term() }
   }
 
 
