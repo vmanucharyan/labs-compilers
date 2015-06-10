@@ -148,12 +148,12 @@ case class Parser(inputChain: String, cursor: Int, values: Map[String, Double]) 
 
     val le = (v1: Double, v2: Double) => if (v1 <= v2) 1.0 else 0.0
     val l = (v1: Double, v2: Double) => if (v1 < v2) 1.0 else 0.0
-    val eq = (v1: Double, v2: Double) => if (v1 == v2) 1.0 else 0.0
+    val neq = (v1: Double, v2: Double) => if (v1 != v2) 1.0 else 0.0
     val be = (v1: Double, v2: Double) => if (v1 >= v2) 1.0 else 0.0
     val b = (v1: Double, v2: Double) => if (v1 > v2) 1.0 else 0.0
 
     consume("<=").map(p => (le, p)).recoverWith { case _: ParserException =>
-      consume("<>").map(p => (eq, p)).recoverWith { case _: ParserException =>
+      consume("<>").map(p => (neq, p)).recoverWith { case _: ParserException =>
         consume("<").map(p => (l, p)).recoverWith { case _: ParserException =>
           consume(">=").map(p => (be, p)).recoverWith { case _: ParserException =>
             consume(">").map(p => (b, p))
