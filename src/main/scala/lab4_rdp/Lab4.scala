@@ -36,13 +36,16 @@ object Lab4 {
         |{
         |    a = 12 > 5;
         |    b = 1 < 2;
-        |    c = 51 < 1;
+        |    c = 100 < 3 * 100;
         |}
       """.stripMargin
 
     val parser = Parser(inputString)
-    parser.parse() match {
-      case Success(isValid) => println("Input string is valid")
+    parser.program() match {
+      case Success(outParser) =>
+        println("Input string is valid")
+        println("values:")
+        println(outParser.values)
       case Failure(e) => println("Failed to parse input string: " + e.getMessage);
     }
   }

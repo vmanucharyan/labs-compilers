@@ -1,9 +1,13 @@
 package lab4_rdp
 
+import java.util.function.BinaryOperator
+
 import scala.util.{Failure, Success, Try}
 
 
-class Parser(val inputChain: String, val cursor: Int) {
+case class Parser(inputChain: String, cursor: Int, values: Map[String, Double]) {
+  import Parser.BinaryOperation
+
   val trimmedChain = inputChain.trim
 
   def parse(): Try[Boolean] =
@@ -27,7 +31,14 @@ class Parser(val inputChain: String, val cursor: Int) {
 
   def operator(): Try[Parser] = {
     println("ENTERING OPERATOR")
-    identifier().flatMap(_.consume("=")).flatMap(_.expression())
+    this
+      .identifier()
+      .flatMap{ case (idName, p) => p.consume("=").map(p1 => (idName, p1)) }
+      .flatMap{ case (idName, p) =>
+          p.expression().map { case (exprRes, p1: Parser) =>
+            p1.copy(values = values + (idName -> exprRes) )
+          }
+      }
       .recover { case e: ParserException => this }
   }
 
@@ -39,10 +50,10 @@ class Parser(val inputChain: String, val cursor: Int) {
   }
 
 
-  def identifier(): Try[Parser] = {
+  def identifier(): Try[(String, Parser)] = {
     println("ENTERING IDENTIFIER")
     consumeWord() flatMap { case (symbol, parser) =>
-      if (symbol.head.isLetter) Success(parser)
+      if (symbol.head.isLetter) Success(symbol -> parser)
       else {
         println(s"$symbol is not identifier")
         Failure(ParserException("identifier starts with letter"))
@@ -51,73 +62,99 @@ class Parser(val inputChain: String, val cursor: Int) {
   }
 
 
-  def expression(): Try[Parser] = {
+  def expression(): Try[(Double, Parser)] = {
     println("ENTERING EXPRESSION")
-    arithmeticExpression().flatMap(_.cmpOp()).flatMap(_.arithmeticExpression())
+    this
+      .arithmeticExpression()
+      .flatMap { case (value, p) => p.cmpOp().map{ case (op, p1) => (value, op, p1)} }
+      .flatMap { case (value1: Double, op: BinaryOperation, p: Parser) =>
+        p.arithmeticExpression().map { case (value2, p1) => (op(value1, value2), p1)}
+      }
       .recoverWith { case _: ParserException => arithmeticExpression() }
   }
 
 
-  def arithmeticExpression(): Try[Parser] = {
+  def arithmeticExpression(): Try[(Double, Parser)] = {
     println("ENTERING ARITHMETIC EXPRESSION")
     term().recoverWith { case _: ParserException =>
-      term().flatMap(_.arithmeticExpression1())
+      term().flatMap{ case (value, p) => p.arithmeticExpression1(value) }
     }
   }
 
 
-  def arithmeticExpression1(): Try[Parser] = {
+  def arithmeticExpression1(prefix: Double): Try[(Double, Parser)] = {
     println("ENTERING ARITHMETIC EXPRESSION1")
-    addOp().flatMap(_.term())
+    addOp().flatMap { case (op, p) => p.term().map { case (termRes, p1) => (op(prefix, termRes), p1) } }
       .recoverWith { case _: ParserException =>
-        addOp().flatMap(_.term()).flatMap(_.arithmeticExpression1())
+        this
+          .addOp()
+          .flatMap { case (op, p) => p.term().map { case (termVal, p1) => (op(prefix, termVal), p1) } }
+          .flatMap { case (value, p) => p.arithmeticExpression1(prefix) }
       }
   }
 
 
-  def term(): Try[Parser] = {
+  def term(): Try[(Double, Parser)] = {
     println("ENTERING TERM")
 
     factor().recoverWith { case _: ParserException =>
-      factor().flatMap(_.term1())
+      factor().flatMap { case (value, p) => p.term1(value) }
     }
   }
 
 
-  def term1(): Try[Parser] = {
+  def term1(prefix: Double): Try[(Double, Parser)] = {
     println("ENTERING TERM1")
 
-    mulOp().flatMap(_.factor()).recoverWith { case _: ParserException =>
-      mulOp().flatMap(_.factor()).flatMap(_.term1())
+    mulOp().flatMap { case (op, p) =>
+      p.factor().map { case (value, p1) => op(prefix, value) -> p1 }
+    }
+    .recoverWith { case _: ParserException =>
+      this
+        .mulOp()
+        .flatMap{ case (op, mulp) =>
+          mulp.factor().map { case (facres, facp) => op(prefix, facres) -> facp }
+        }
+        .flatMap { case (value, p) => p.term1(value) }
     }
   }
 
 
-  def factor(): Try[Parser] = {
+  def factor(): Try[(Double, Parser)] = {
     println("ENTERING FACTOR1")
 
-    identifier().recoverWith { case _: ParserException =>
-      constant().recoverWith { case _: ParserException =>
-        consume("(").flatMap(_.arithmeticExpression()).flatMap(_.consume(")"))
-      }
+    identifier().map { case (name, p) => (values(name), p)  }
+      .recoverWith { case _: ParserException =>
+        constant().recoverWith { case _: ParserException =>
+          this
+            .consume("(")
+            .flatMap(_.arithmeticExpression())
+            .flatMap{ case (value, p) => p.consume(")").map(consp => (value, consp)) }
+        }
     }
   }
 
 
-  def constant(): Try[Parser] = {
+  def constant(): Try[(Double, Parser)] = {
     println("ENTERING CONSTANT")
-    consumeNumber().map { case (_, p) => p }
+    consumeNumber()
   }
 
 
-  def cmpOp(): Try[Parser] = {
+  def cmpOp(): Try[(BinaryOperation, Parser)] = {
     println("ENTERING CMP")
 
-    consume("<=").recoverWith { case _: ParserException =>
-      consume("<>").recoverWith { case _: ParserException =>
-        consume("<").recoverWith { case _: ParserException =>
-          consume(">=").recoverWith { case _: ParserException =>
-            consume(">")
+    val le = (v1: Double, v2: Double) => if (v1 <= v2) 1.0 else 0.0
+    val l = (v1: Double, v2: Double) => if (v1 < v2) 1.0 else 0.0
+    val eq = (v1: Double, v2: Double) => if (v1 == v2) 1.0 else 0.0
+    val be = (v1: Double, v2: Double) => if (v1 >= v2) 1.0 else 0.0
+    val b = (v1: Double, v2: Double) => if (v1 > v2) 1.0 else 0.0
+
+    consume("<=").map(p => (le, p)).recoverWith { case _: ParserException =>
+      consume("<>").map(p => (eq, p)).recoverWith { case _: ParserException =>
+        consume("<").map(p => (l, p)).recoverWith { case _: ParserException =>
+          consume(">=").map(p => (be, p)).recoverWith { case _: ParserException =>
+            consume(">").map(p => (b, p))
           }
         }
       }
@@ -125,20 +162,28 @@ class Parser(val inputChain: String, val cursor: Int) {
   }
 
 
-  def addOp(): Try[Parser] = {
-    consume("+").recoverWith { case _: ParserException => consume("-") }
+  def addOp(): Try[(BinaryOperation, Parser)] = {
+    consume("+").map(p => ((v1: Double, v2: Double) => v1 + v2, p) )
+      .recoverWith { case _: ParserException =>
+        consume("-").map(p => ((v1: Double, v2: Double) => v1 - v2, p) )
+    }
   }
 
 
-  def mulOp(): Try[Parser] = {
-    consume("*").recoverWith { case _: ParserException => consume("/") }
+  def mulOp(): Try[(BinaryOperation, Parser)] = {
+    consume("*")
+      .map(p => ( (v1: Double, v2: Double) => v1 * v2 , p) )
+      .recoverWith {
+        case _: ParserException =>
+          consume("/").map(p => ( (v1: Double, v2: Double) => v1 / v2, p) )
+      }
   }
 
 
   def consume(symbol: String): Try[Parser] = {
     if (trimmedChain.startsWith(symbol)) {
       println(s"consumed $symbol from $trimmedChain")
-      Success(new Parser(trimmedChain.drop(symbol.length), cursor + symbol.length))
+      Success(new Parser(trimmedChain.drop(symbol.length), cursor + symbol.length, values))
     }
     else
       Failure(ParserException(s"($cursor) expected $symbol in $trimmedChain"))
@@ -151,29 +196,32 @@ class Parser(val inputChain: String, val cursor: Int) {
     println(s"consumed $symbol from $trimmedChain")
 
     if (symbol.nonEmpty) {
-      Success(symbol -> new Parser(trimmedChain.drop(symbol.length), cursor + symbol.length))
+      Success(symbol -> new Parser(trimmedChain.drop(symbol.length), cursor + symbol.length, values))
     }
     else Failure(ParserException(s"expected identifier, got $trimmedChain"))
   }
 
 
-  def consumeNumber(): Try[(Int, Parser)] = {
+  def consumeNumber(): Try[(Double, Parser)] = {
     val numberString = trimmedChain.takeWhile(c => Parser.digits.contains(c))
     if (numberString.isEmpty)
       Failure(ParserException(s"expected number in ${trimmedChain.take(10)}..."))
     else {
       println(s"consuming $numberString")
-      Success(numberString.toInt ->
-        new Parser(trimmedChain.drop(numberString.length), cursor + numberString.length))
+      Success(numberString.toDouble ->
+        new Parser(trimmedChain.drop(numberString.length), cursor + numberString.length, values))
     }
   }
 }
 
 
 object Parser {
+  type BinaryOperation = (Double, Double) => Double
+
   val digits = Set('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
   val separators = Set(' ', '\n', '+', '-', '<', '>', '=', '!', '*', '/', '(', ')', '{' , '}')
-  def apply(str: String): Parser = new Parser(str, 0)
+
+  def apply(str: String): Parser = new Parser(str, 0, Map())
 }
 
 case class ParserException(msg: String) extends RuntimeException(msg)
